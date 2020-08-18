@@ -1,6 +1,5 @@
 GOCMD=go
 GOBUILD=$(GOCMD) build
-GOCLEAN=$(GOCMD) clean
 BASEPATH := $(shell pwd)
 BUILDDIR=$(BASEPATH)/dist
 
@@ -13,31 +12,17 @@ BIN_DIR=usr/local/bin
 CONFIG_DIR=etc/kobe
 BASE_DIR=var/kobe
 LIB_DIR=$(BASE_DIR)/lib
-GOPROXY="https://goproxy.cn,direct"
 
-build_linux:
-	GOOS=linux GOARCH=amd64  $(GOBUILD) -o $(BUILDDIR)/$(BIN_DIR)/$(KOBE_CLIENT_NAME) $(KOBE_SRC)/client/*.go
-	GOOS=linux GOARCH=amd64  $(GOBUILD) -o $(BUILDDIR)/$(BIN_DIR)/$(KOBE_SERVER_NAME) $(KOBE_SRC)/server/*.go
-	GOOS=linux GOARCH=amd64  $(GOBUILD) -o $(BUILDDIR)/$(BIN_DIR)/$(KOBE_INVENTORY_NAME) $(KOBE_SRC)/inventory/*.go
-	mkdir -p $(BUILDDIR)/$(LIB_DIR) && cp -r     $(BASEPATH)/ansible $(BUILDDIR)/$(LIB_DIR)
-	mkdir -p $(BUILDDIR)/$(CONFIG_DIR) && cp -r  $(BASEPATH)/conf/* $(BUILDDIR)/$(CONFIG_DIR)
-build_darwin:
-	GOOS=darwin GOARCH=amd64  $(GOBUILD) -o $(BUILDDIR)/$(BIN_DIR)/$(KOBE_CLIENT_NAME) $(KOBE_SRC)/client/*.go
-	GOOS=darwin GOARCH=amd64  $(GOBUILD) -o $(BUILDDIR)/$(BIN_DIR)/$(KOBE_SERVER_NAME) $(KOBE_SRC)/server/*.go
-	GOOS=darwin GOARCH=amd64  $(GOBUILD) -o $(BUILDDIR)/$(BIN_DIR)/$(KOBE_INVENTORY_NAME) $(KOBE_SRC)/inventory/*.go
-	mkdir -p $(BUILDDIR)/$(LIB_DIR) && cp -r     $(BASEPATH)/ansible $(BUILDDIR)/$(LIB_DIR)
-	mkdir -p $(BUILDDIR)/$(CONFIG_DIR) && cp -r  $(BASEPATH)/conf/* $(BUILDDIR)/$(CONFIG_DIR)
 
 build_server_linux:
-	GOOS=linux GOARCH=amd64  $(GOBUILD) -o $(BUILDDIR)/$(BIN_DIR)/$(KOBE_SERVER_NAME) $(KOBE_SRC)/server/*.go
-	GOOS=linux GOARCH=amd64  $(GOBUILD) -o $(BUILDDIR)/$(BIN_DIR)/$(KOBE_INVENTORY_NAME) $(KOBE_SRC)/inventory/*.go
+	GOOS=linux  GOARCH=$(GOARCH) $(GOBUILD) -o $(BUILDDIR)/$(BIN_DIR)/$(KOBE_SERVER_NAME) $(KOBE_SRC)/server/*.go
+	GOOS=linux  GOARCH=$(GOARCH) $(GOBUILD) -o $(BUILDDIR)/$(BIN_DIR)/$(KOBE_INVENTORY_NAME) $(KOBE_SRC)/inventory/*.go
 	mkdir -p $(BUILDDIR)/$(LIB_DIR) && cp -r     $(BASEPATH)/ansible $(BUILDDIR)/$(LIB_DIR)
 	mkdir -p $(BUILDDIR)/$(CONFIG_DIR) && cp -r  $(BASEPATH)/conf/* $(BUILDDIR)/$(CONFIG_DIR)
 
 clean:
-	$(GOCLEAN)
 	rm -fr $(BUILDDIR)
 
 docker:
 	@echo "build docker images"
-	docker build -t kubeoperator/kobe:master --build-arg GOPROXY=$(GOPROXY) .
+	docker build -t kubeoperator/kobe:master --build-arg GOARCH=$(GOARCH) .
