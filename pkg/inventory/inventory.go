@@ -60,6 +60,11 @@ func (kip kobeInventoryProvider) ListHandler() (Result, error) {
 		return nil, err
 	}
 	inventory, _ := kip.getInventory(id)
+
+	if inventory == nil {
+		return nil, fmt.Errorf("can not find inventory in cache invalid taskId %s", id)
+	}
+
 	groups := make(map[string]map[string]interface{})
 	all := api.Group{
 		Name:     "all",
@@ -75,7 +80,6 @@ func (kip kobeInventoryProvider) ListHandler() (Result, error) {
 	meta := map[string]interface{}{}
 	hostVars := map[string]interface{}{}
 	for _, host := range inventory.Hosts {
-		vars := make(map[string]interface{})
 		all.Hosts = append(all.Hosts, host.Name)
 		hostVars[host.Name] = map[string]interface{}{
 			"ansible_ssh_host": host.Ip,
@@ -90,11 +94,15 @@ func (kip kobeInventoryProvider) ListHandler() (Result, error) {
 			m := hostVars[host.Name].(map[string]interface{})
 			m["ansible_ssh_private_key_file"] = generatePrivateKeyFile(host.Name, host.PrivateKey)
 		}
+		if host.ProxyConfig != nil && host.ProxyConfig.Enable {
+			m := hostVars[host.Name].(map[string]interface{})
+			m["ansible_ssh_common_args"] = fmt.Sprintf("-o ProxyCommand=\"sshpass -p %s ssh -W  %%h:%%p -p %d -q %s@%s\" -o StrictHostKeyChecking=no", host.ProxyConfig.Password, host.ProxyConfig.Port, host.ProxyConfig.User, host.ProxyConfig.Ip)
+		}
 		if host.Vars != nil {
+			m := hostVars[host.Name].(map[string]interface{})
 			for k, v := range host.Vars {
-				vars[k] = v
+				m[k] = v
 			}
-			hostVars["vars"] = vars
 		}
 	}
 	groups[all.Name] = parseGroupToMap(all)

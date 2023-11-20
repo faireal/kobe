@@ -1,6 +1,8 @@
 syntax = "proto3";
 
 package api;
+option go_package = ".;api";
+
 
 service KobeApi {
   rpc CreateProject(CreateProjectRequest) returns (CreateProjectResponse){}
@@ -24,9 +26,19 @@ message Host {
   int32 port = 3;
   string user = 4;
   string password = 5;
-  string privateKey =6;
-  map<string, string> vars = 7;
+  string privateKey = 6;
+  ProxyConfig proxyConfig = 7;
+  map<string, string> vars = 8;
 }
+
+message ProxyConfig {
+  bool enable = 1;
+  string user = 2;
+  string password = 3;
+  string ip = 4;
+  int32 port = 5;
+}
+
 
 message Group {
   string name = 1;
@@ -60,6 +72,7 @@ message RunPlaybookRequest {
   string project = 1;
   string playbook = 2;
   Inventory inventory = 3;
+  string tag = 4;
 }
 
 message RunPlaybookResult {

@@ -2,9 +2,9 @@ package project
 
 import (
 	"fmt"
+	"github.com/KubeOperator/kobe/pkg/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/KubeOperator/kobe/pkg/client"
 	"log"
 )
 

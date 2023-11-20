@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"github.com/KubeOperator/kobe/pkg/config"
 	"github.com/KubeOperator/kobe/pkg/constant"
+	"github.com/spf13/viper"
 	"log"
 )
 
@@ -22,7 +22,7 @@ func main() {
 		log.Fatal(err)
 	}
 	server := newServer()
-	log.Printf("kobe server lisen at: %s", address)
+	log.Printf("kobe server listen at: %s", address)
 	if err := server.Serve(*lis); err != nil {
 		log.Fatal(err)
 	}

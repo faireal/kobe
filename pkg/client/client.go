@@ -54,7 +54,7 @@ func (c KobeClient) ListProject() ([]*api.Project, error) {
 	return resp.Items, nil
 }
 
-func (c KobeClient) RunPlaybook(project, playbook string, inventory api.Inventory) (*api.Result, error) {
+func (c KobeClient) RunPlaybook(project, playbook, tag string, inventory *api.Inventory) (*api.Result, error) {
 	conn, err := c.createConnection()
 	if err != nil {
 		return nil, err
@@ -64,7 +64,8 @@ func (c KobeClient) RunPlaybook(project, playbook string, inventory api.Inventor
 	request := &api.RunPlaybookRequest{
 		Project:   project,
 		Playbook:  playbook,
-		Inventory: &inventory,
+		Inventory: inventory,
+		Tag:       tag,
 	}
 	req, err := client.RunPlaybook(context.Background(), request)
 	if err != nil {
@@ -73,7 +74,7 @@ func (c KobeClient) RunPlaybook(project, playbook string, inventory api.Inventor
 	return req.Result, nil
 }
 
-func (c KobeClient) RunAdhoc(pattern, module, param string, inventory api.Inventory) (*api.Result, error) {
+func (c KobeClient) RunAdhoc(pattern, module, param string, inventory *api.Inventory) (*api.Result, error) {
 	conn, err := c.createConnection()
 	if err != nil {
 		return nil, err
@@ -81,7 +82,7 @@ func (c KobeClient) RunAdhoc(pattern, module, param string, inventory api.Invent
 	defer conn.Close()
 	client := api.NewKobeApiClient(conn)
 	request := &api.RunAdhocRequest{
-		Inventory: &inventory,
+		Inventory: inventory,
 		Module:    module,
 		Param:     param,
 		Pattern:   pattern,
@@ -157,7 +158,7 @@ func (c *KobeClient) ListResult() ([]*api.Result, error) {
 
 func (c *KobeClient) createConnection() (*grpc.ClientConn, error) {
 	address := fmt.Sprintf("%s:%d", c.host, c.port)
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(100*1024*1024)))
 	if err != nil {
 		return nil, err
 	}

@@ -20,7 +20,9 @@ RUN make build_server_linux GOARCH=$GOARCH
 FROM alpinelinux/ansible:latest
 
 RUN apk add sshpass \
-    && pip3 install netaddr
+    && pip3 install netaddr \
+    && pip3 install pywinrm
+
 
 RUN mkdir /root/.ssh  \
     && touch /root/.ssh/config \
@@ -30,8 +32,10 @@ COPY --from=stage-build /build/kobe/dist/etc /etc/
 COPY --from=stage-build /build/kobe/dist/usr /usr/
 COPY --from=stage-build /build/kobe/dist/var /var/
 
+RUN echo 'kobe-server' >> /root/entrypoint.sh
+
 VOLUME ["/var/kobe/data"]
 
 EXPOSE 8080
 
-CMD ["kobe-server"]
+CMD ["sh","/root/entrypoint.sh"]
