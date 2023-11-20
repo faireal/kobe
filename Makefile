@@ -25,4 +25,4 @@ clean:
 
 docker:
 	@echo "build docker images"
-	docker build -t kubeoperator/kobe:master --build-arg GOARCH=$(GOARCH) .
+	docker build -t trusfort/kobe:master --build-arg GOARCH=$(GOARCH) .
