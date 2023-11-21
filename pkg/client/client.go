@@ -164,3 +164,21 @@ func (c *KobeClient) createConnection() (*grpc.ClientConn, error) {
 	}
 	return conn, nil
 }
+
+func (c *KobeClient) CancelTask(taskId string) error {
+	conn, err := c.createConnection()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	client := api.NewKobeApiClient(conn)
+	request := api.CancelTaskRequest{
+		TaskId: taskId,
+	}
+	_, err = client.CancelTask(context.Background(), &request)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}

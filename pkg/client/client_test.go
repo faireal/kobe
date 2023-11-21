@@ -41,6 +41,27 @@ func TestKobeClient_RunAdhoc(t *testing.T) {
 	fmt.Println(adhoc)
 }
 
+func TestKobeClient_CancelTask(t *testing.T) {
+	client := NewKobeClient(host, port)
+	result, err := client.RunAdhoc("master", "setup", "", inventory)
+	if err != nil {
+		t.Error(err)
+	}
+	//go func() {
+	//	err = client.CancelTask(result.Id)
+	//	if err != nil {
+	//		t.Fatal(err)
+	//		return
+	//	}
+	//}()
+	//err = client.WatchRun(result.Id, os.Stdout)
+	//if err != nil {
+	//	t.Fatal(err)
+	//	return
+	//}
+	fmt.Println(result)
+}
+
 func TestKobeClient_RunPlaybook(t *testing.T) {
 	client := NewKobeClient(host, port)
 	result, err := client.RunPlaybook("test", "test.yml", "abc", inventory)
