@@ -19,6 +19,7 @@ type Kobe struct {
 	taskCache      *cache.Cache
 	inventoryCache *cache.Cache
 	chCache        *cache.Cache
+	cancelCahce    *cache.Cache
 	pool           *Pool
 }
 
@@ -27,6 +28,7 @@ func NewKobe() *Kobe {
 		taskCache:      cache.New(24*time.Hour, 5*time.Minute),
 		chCache:        cache.New(24*time.Hour, 5*time.Minute),
 		inventoryCache: cache.New(10*time.Minute, 5*time.Minute),
+		cancelCahce:    cache.New(24*time.Hour, 5*time.Minute),
 		pool:           NewPool(),
 	}
 }
@@ -108,6 +110,8 @@ func (k *Kobe) RunAdhoc(ctx context.Context, req *api.RunAdhocRequest) (*api.Run
 		Finished:  false,
 		Content:   "",
 	}
+	ctx, cancelFunc := context.WithCancel(ctx)
+	k.cancelCahce.Set(result.Id, cancelFunc, cache.DefaultExpiration)
 	k.taskCache.Set(result.Id, &result, cache.DefaultExpiration)
 	k.chCache.Set(result.Id, ch, cache.DefaultExpiration)
 	k.inventoryCache.Set(result.Id, req.Inventory, cache.DefaultExpiration)
@@ -116,7 +120,7 @@ func (k *Kobe) RunAdhoc(ctx context.Context, req *api.RunAdhocRequest) (*api.Run
 		return nil, err
 	}
 	task := func() {
-		runner.Run(ch, &result)
+		runner.Run(ctx, ch, &result)
 		result.Finished = true
 		result.EndTime = time.Now().Format("2006-01-02 15:04:05")
 		k.taskCache.Set(result.Id, &result, cache.DefaultExpiration)
@@ -143,6 +147,8 @@ func (k *Kobe) RunPlaybook(ctx context.Context, req *api.RunPlaybookRequest) (*a
 		Content:   "",
 		Project:   req.Project,
 	}
+	ctx, cancelFunc := context.WithCancel(ctx)
+	k.cancelCahce.Set(result.Id, cancelFunc, cache.DefaultExpiration)
 	k.taskCache.Set(result.Id, &result, cache.DefaultExpiration)
 	k.chCache.Set(result.Id, ch, cache.DefaultExpiration)
 	k.inventoryCache.Set(result.Id, req.Inventory, cache.DefaultExpiration)
@@ -151,7 +157,7 @@ func (k *Kobe) RunPlaybook(ctx context.Context, req *api.RunPlaybookRequest) (*a
 		return nil, err
 	}
 	b := func() {
-		runner.Run(ch, &result)
+		runner.Run(ctx, ch, &result)
 		result.Finished = true
 		result.EndTime = time.Now().Format("2006-01-02 15:04:05")
 		k.taskCache.Set(result.Id, &result, cache.DefaultExpiration)
@@ -203,5 +209,28 @@ func (k *Kobe) ListResult(ctx context.Context, req *api.ListResultRequest) (*api
 	}
 	return &api.ListResultResponse{
 		Items: results,
+	}, nil
+}
+
+func (k *Kobe) CancelTask(ctx context.Context, req *api.CancelTaskRequest) (*api.CancelTaskResponse, error) {
+	id := req.GetTaskId()
+	result, found := k.taskCache.Get(id)
+	if !found {
+		return nil, errors.New(fmt.Sprintf("can not find task: %s result", id))
+	}
+	val, ok := result.(*api.Result)
+	if !ok {
+		return nil, errors.New("invalid result type")
+	}
+	if val.Finished {
+		return nil, errors.New(fmt.Sprintf("task: %s already finished", id))
+	}
+	cancel, found := k.cancelCahce.Get(id)
+	if !found {
+		return nil, errors.New(fmt.Sprintf("can not find task: %s cancel func", id))
+	}
+	cancel.(context.CancelFunc)()
+	return &api.CancelTaskResponse{
+		Success: true,
 	}, nil
 }

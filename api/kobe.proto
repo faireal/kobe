@@ -13,6 +13,7 @@ service KobeApi {
   rpc WatchResult(WatchRequest) returns(stream WatchStream){}
   rpc GetResult(GetResultRequest) returns(GetResultResponse){}
   rpc ListResult(ListResultRequest) returns(ListResultResponse){}
+  rpc CancelTask(CancelTaskRequest) returns(CancelTaskResponse){}
 }
 
 message Project{
@@ -132,4 +133,11 @@ message ListResultResponse{
   repeated Result items = 1;
 }
 
+message CancelTaskRequest{
+  string taskId = 1;
+}
+
+message CancelTaskResponse{
+  bool success = 1;
+}
 

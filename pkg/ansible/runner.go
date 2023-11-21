@@ -2,6 +2,7 @@ package ansible
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"github.com/KubeOperator/kobe/api"
 	"github.com/KubeOperator/kobe/pkg/constant"
@@ -27,7 +28,7 @@ type AdhocRunner struct {
 	Pattern string
 }
 
-func (a *AdhocRunner) Run(ch chan []byte, result *api.Result) {
+func (a *AdhocRunner) Run(ctx context.Context, ch chan []byte, result *api.Result) {
 	ansiblePath, err := exec.LookPath(constant.AnsibleBinPath)
 	if err != nil {
 		result.Success = false
@@ -40,7 +41,7 @@ func (a *AdhocRunner) Run(ch chan []byte, result *api.Result) {
 		result.Message = err.Error()
 		return
 	}
-	cmd := exec.Command(ansiblePath,
+	cmd := exec.CommandContext(ctx, ansiblePath,
 		"-e", "host_key_checking=False",
 		"-i", inventoryProviderPath, a.Pattern, "-m", a.Module)
 	if a.Param != "" {
@@ -54,7 +55,7 @@ func (a *AdhocRunner) Run(ch chan []byte, result *api.Result) {
 
 }
 
-func (p *PlaybookRunner) Run(ch chan []byte, result *api.Result) {
+func (p *PlaybookRunner) Run(ctx context.Context, ch chan []byte, result *api.Result) {
 	ansiblePath, err := exec.LookPath(constant.AnsiblePlaybookBinPath)
 	if err != nil {
 		result.Success = false
@@ -68,7 +69,7 @@ func (p *PlaybookRunner) Run(ch chan []byte, result *api.Result) {
 		return
 	}
 
-	cmd := exec.Command(ansiblePath,
+	cmd := exec.CommandContext(ctx, ansiblePath,
 		"-i", inventoryProviderPath,
 		path.Join(constant.ProjectDir, p.Project.Name, p.Playbook))
 	varPath := path.Join(constant.ProjectDir, p.Project.Name, constant.AnsibleVariablesName)
