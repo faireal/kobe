@@ -100,3 +100,11 @@ func (pm *ProjectManager) searchPlaybooks(projectName string) ([]string, error) 
 	}
 	return playbooks, nil
 }
+
+func (pm *ProjectManager) DeleteProject(name string) error {
+	projectPath := path.Join(constant.ProjectDir, name)
+	if err := os.RemoveAll(projectPath); err != nil {
+		return err
+	}
+	return nil
+}

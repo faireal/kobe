@@ -89,3 +89,23 @@ func TestKobeClient_GetResult(t *testing.T) {
 	}
 	fmt.Println(result)
 }
+
+func TestKobeClient_CreateProject(t *testing.T) {
+	client := NewKobeClient(host, port)
+	project, err := client.CreateProject("ko", "https://gitee.com/faireal/ansible.git")
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	fmt.Println(project)
+}
+
+func TestKobeClient_ListProject(t *testing.T) {
+	client := NewKobeClient(host, port)
+	project, err := client.ListProject()
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	fmt.Println(project)
+}

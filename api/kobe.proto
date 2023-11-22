@@ -7,6 +7,7 @@ option go_package = ".;api";
 service KobeApi {
   rpc CreateProject(CreateProjectRequest) returns (CreateProjectResponse){}
   rpc ListProject(ListProjectRequest) returns(ListProjectResponse){}
+  rpc DeleteProject(DeleteProjectRequest) returns(DeleteProjectResponse){}
   rpc GetInventory(GetInventoryRequest) returns(GetInventoryResponse){}
   rpc RunPlaybook(RunPlaybookRequest) returns(RunPlaybookResult){}
   rpc RunAdhoc(RunAdhocRequest) returns(RunAdhocResult){}
@@ -67,6 +68,14 @@ message ListProjectRequest {}
 
 message ListProjectResponse {
   repeated Project items = 1;
+}
+
+message DeleteProjectRequest {
+  string name = 1;
+}
+
+message DeleteProjectResponse {
+  bool success = 1;
 }
 
 message RunPlaybookRequest {

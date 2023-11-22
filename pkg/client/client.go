@@ -54,6 +54,23 @@ func (c KobeClient) ListProject() ([]*api.Project, error) {
 	return resp.Items, nil
 }
 
+func (c KobeClient) DeleteProject(name string) error {
+	conn, err := c.createConnection()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	client := api.NewKobeApiClient(conn)
+	request := api.DeleteProjectRequest{
+		Name: name,
+	}
+	_, err = client.DeleteProject(context.Background(), &request)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c KobeClient) RunPlaybook(project, playbook, tag string, inventory *api.Inventory) (*api.Result, error) {
 	conn, err := c.createConnection()
 	if err != nil {

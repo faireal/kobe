@@ -40,6 +40,7 @@ func (k *Kobe) CreateProject(ctx context.Context, req *api.CreateProjectRequest)
 	}
 	return resp, nil
 }
+
 func (k *Kobe) ListProject(ctx context.Context, req *api.ListProjectRequest) (*api.ListProjectResponse, error) {
 	pm := ProjectManager{}
 	ps, err := pm.SearchProjects()
@@ -48,6 +49,18 @@ func (k *Kobe) ListProject(ctx context.Context, req *api.ListProjectRequest) (*a
 	}
 	resp := &api.ListProjectResponse{
 		Items: ps,
+	}
+	return resp, nil
+}
+
+func (k *Kobe) DeleteProject(ctx context.Context, req *api.DeleteProjectRequest) (*api.DeleteProjectResponse, error) {
+	pm := ProjectManager{}
+	err := pm.DeleteProject(req.Name)
+	if err != nil {
+		return nil, err
+	}
+	resp := &api.DeleteProjectResponse{
+		Success: true,
 	}
 	return resp, nil
 }
@@ -187,18 +200,6 @@ func (k *Kobe) GetResult(ctx context.Context, req *api.GetResultRequest) (*api.G
 	if val.Project == "" {
 		val.Project = "adhoc"
 	}
-	//if val.Finished {
-	//	bytes, err := ioutil.ReadFile(path.Join(constant.WorkDir, val.Project, val.Id, "result.json"))
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	val.Content = string(bytes)
-	//	// 取完数据后删除缓存目录
-	//	err = os.RemoveAll(path.Join(constant.WorkDir, val.Project, val.Id))
-	//	if err != nil {
-	//		log.Println(err)
-	//	}
-	//}
 	return &api.GetResultResponse{Item: val}, nil
 }
 
@@ -234,10 +235,6 @@ func (k *Kobe) CancelTask(ctx context.Context, req *api.CancelTaskRequest) (*api
 		if !found {
 			return nil, errors.New(fmt.Sprintf("can not find task: %s cancel func", id))
 		}
-		//val.Finished = true
-		//val.Success = false
-		//val.Message = "cancel task"
-		//val.EndTime = time.Now().Format("2006-01-02 15:04:05")
 		cancel.(context.CancelFunc)()
 		log.Infof("cancel task: %s result: %v", id, val)
 	}
