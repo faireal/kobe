@@ -93,7 +93,7 @@ func (pm *ProjectManager) searchPlaybooks(projectName string) ([]string, error) 
 	var playbooks []string
 	for _, p := range rd {
 		if !p.IsDir() &&
-			strings.Contains(p.Name(), ".yml") &&
+			(strings.Contains(p.Name(), ".yaml") || strings.Contains(p.Name(), ".yml")) &&
 			p.Name() != constant.AnsibleVariablesName {
 			playbooks = append(playbooks, p.Name())
 		}

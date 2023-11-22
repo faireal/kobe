@@ -69,7 +69,7 @@ func TestKobeClient_CancelTask(t *testing.T) {
 
 func TestKobeClient_RunPlaybook(t *testing.T) {
 	client := NewKobeClient(host, port)
-	result, err := client.RunPlaybook("test", "test.yml", "abc", inventory)
+	result, err := client.RunPlaybook("ko", "01-base.yaml", "", inventory)
 	if err != nil {
 		t.Fatal(err)
 		return
