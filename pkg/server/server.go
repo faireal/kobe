@@ -5,13 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/KubeOperator/kobe/api"
-	"github.com/KubeOperator/kobe/pkg/constant"
 	"github.com/patrickmn/go-cache"
+	"github.com/prometheus/common/log"
 	uuid "github.com/satori/go.uuid"
-	"io/ioutil"
-	"log"
-	"os"
-	"path"
 	"time"
 )
 
@@ -28,7 +24,7 @@ func NewKobe() *Kobe {
 		taskCache:      cache.New(24*time.Hour, 5*time.Minute),
 		chCache:        cache.New(24*time.Hour, 5*time.Minute),
 		inventoryCache: cache.New(10*time.Minute, 5*time.Minute),
-		cancelCahce:    cache.New(24*time.Hour, 5*time.Minute),
+		cancelCahce:    cache.New(10*time.Minute, 5*time.Minute),
 		pool:           NewPool(),
 	}
 }
@@ -101,7 +97,7 @@ func (k *Kobe) RunAdhoc(ctx context.Context, req *api.RunAdhocRequest) (*api.Run
 	}
 	ch := make(chan []byte)
 	id := uuid.NewV4().String()
-	result := api.Result{
+	result := &api.Result{
 		Id:        id,
 		StartTime: time.Now().Format("2006-01-02 15:04:05"),
 		EndTime:   "",
@@ -110,9 +106,9 @@ func (k *Kobe) RunAdhoc(ctx context.Context, req *api.RunAdhocRequest) (*api.Run
 		Finished:  false,
 		Content:   "",
 	}
-	ctx, cancelFunc := context.WithCancel(ctx)
+	ctx, cancelFunc := context.WithCancel(context.Background())
 	k.cancelCahce.Set(result.Id, cancelFunc, cache.DefaultExpiration)
-	k.taskCache.Set(result.Id, &result, cache.DefaultExpiration)
+	k.taskCache.Set(result.Id, result, cache.DefaultExpiration)
 	k.chCache.Set(result.Id, ch, cache.DefaultExpiration)
 	k.inventoryCache.Set(result.Id, req.Inventory, cache.DefaultExpiration)
 	runner, err := rm.CreateAdhocRunner(req.Pattern, req.Module, req.Param)
@@ -120,14 +116,19 @@ func (k *Kobe) RunAdhoc(ctx context.Context, req *api.RunAdhocRequest) (*api.Run
 		return nil, err
 	}
 	task := func() {
-		runner.Run(ctx, ch, &result)
+		runner.Run(ctx, ch, result)
 		result.Finished = true
 		result.EndTime = time.Now().Format("2006-01-02 15:04:05")
-		k.taskCache.Set(result.Id, &result, cache.DefaultExpiration)
+		defer func() {
+			// 回收资源 防止内存泄漏
+			fn, _ := k.cancelCahce.Get(result.Id)
+			fn.(context.CancelFunc)()
+		}()
 	}
+	k.taskCache.Set(result.Id, result, cache.DefaultExpiration)
 	k.pool.Commit(task)
 	return &api.RunAdhocResult{
-		Result: &result,
+		Result: result,
 	}, nil
 }
 
@@ -137,7 +138,7 @@ func (k *Kobe) RunPlaybook(ctx context.Context, req *api.RunPlaybookRequest) (*a
 	}
 	ch := make(chan []byte)
 	id := uuid.NewV4().String()
-	result := api.Result{
+	result := &api.Result{
 		Id:        id,
 		StartTime: time.Now().Format("2006-01-02 15:04:05"),
 		EndTime:   "",
@@ -147,9 +148,9 @@ func (k *Kobe) RunPlaybook(ctx context.Context, req *api.RunPlaybookRequest) (*a
 		Content:   "",
 		Project:   req.Project,
 	}
-	ctx, cancelFunc := context.WithCancel(ctx)
+	ctx, cancelFunc := context.WithCancel(context.Background())
 	k.cancelCahce.Set(result.Id, cancelFunc, cache.DefaultExpiration)
-	k.taskCache.Set(result.Id, &result, cache.DefaultExpiration)
+	k.taskCache.Set(result.Id, result, cache.DefaultExpiration)
 	k.chCache.Set(result.Id, ch, cache.DefaultExpiration)
 	k.inventoryCache.Set(result.Id, req.Inventory, cache.DefaultExpiration)
 	runner, err := rm.CreatePlaybookRunner(req.Project, req.Playbook, req.Tag)
@@ -157,14 +158,19 @@ func (k *Kobe) RunPlaybook(ctx context.Context, req *api.RunPlaybookRequest) (*a
 		return nil, err
 	}
 	b := func() {
-		runner.Run(ctx, ch, &result)
+		runner.Run(ctx, ch, result)
 		result.Finished = true
 		result.EndTime = time.Now().Format("2006-01-02 15:04:05")
-		k.taskCache.Set(result.Id, &result, cache.DefaultExpiration)
+		defer func() {
+			// 回收资源 防止内存泄漏
+			fn, _ := k.cancelCahce.Get(result.Id)
+			fn.(context.CancelFunc)()
+		}()
 	}
+	k.taskCache.Set(result.Id, result, cache.DefaultExpiration)
 	k.pool.Commit(b)
 	return &api.RunPlaybookResult{
-		Result: &result,
+		Result: result,
 	}, nil
 }
 
@@ -181,18 +187,18 @@ func (k *Kobe) GetResult(ctx context.Context, req *api.GetResultRequest) (*api.G
 	if val.Project == "" {
 		val.Project = "adhoc"
 	}
-	if val.Finished {
-		bytes, err := ioutil.ReadFile(path.Join(constant.WorkDir, val.Project, val.Id, "result.json"))
-		if err != nil {
-			return nil, err
-		}
-		val.Content = string(bytes)
-		// 取完数据后删除缓存目录
-		err = os.RemoveAll(path.Join(constant.WorkDir, val.Project, val.Id))
-		if err != nil {
-			log.Println(err)
-		}
-	}
+	//if val.Finished {
+	//	bytes, err := ioutil.ReadFile(path.Join(constant.WorkDir, val.Project, val.Id, "result.json"))
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	val.Content = string(bytes)
+	//	// 取完数据后删除缓存目录
+	//	err = os.RemoveAll(path.Join(constant.WorkDir, val.Project, val.Id))
+	//	if err != nil {
+	//		log.Println(err)
+	//	}
+	//}
 	return &api.GetResultResponse{Item: val}, nil
 }
 
@@ -222,14 +228,19 @@ func (k *Kobe) CancelTask(ctx context.Context, req *api.CancelTaskRequest) (*api
 	if !ok {
 		return nil, errors.New("invalid result type")
 	}
-	if val.Finished {
-		return nil, errors.New(fmt.Sprintf("task: %s already finished", id))
+	// 如果任务还没结束，取消任务
+	if !val.Finished {
+		cancel, found := k.cancelCahce.Get(id)
+		if !found {
+			return nil, errors.New(fmt.Sprintf("can not find task: %s cancel func", id))
+		}
+		//val.Finished = true
+		//val.Success = false
+		//val.Message = "cancel task"
+		//val.EndTime = time.Now().Format("2006-01-02 15:04:05")
+		cancel.(context.CancelFunc)()
+		log.Infof("cancel task: %s result: %v", id, val)
 	}
-	cancel, found := k.cancelCahce.Get(id)
-	if !found {
-		return nil, errors.New(fmt.Sprintf("can not find task: %s cancel func", id))
-	}
-	cancel.(context.CancelFunc)()
 	return &api.CancelTaskResponse{
 		Success: true,
 	}, nil

@@ -51,8 +51,8 @@ func (a *AdhocRunner) Run(ctx context.Context, ch chan []byte, result *api.Resul
 	cmdEnv = append(cmdEnv, fmt.Sprintf("%s=%s", constant.TaskEnvKey, result.Id))
 	cmd.Env = append(os.Environ(), cmdEnv...)
 	log.Infof("id:%s  content :%s", result.Id, cmd.String())
-	runCmd(ch, "adhoc", cmd, result)
-
+	runCmd(ctx, ch, "adhoc", cmd, result)
+	log.Infof("result : %v", result)
 }
 
 func (p *PlaybookRunner) Run(ctx context.Context, ch chan []byte, result *api.Result) {
@@ -85,10 +85,11 @@ func (p *PlaybookRunner) Run(ctx context.Context, ch chan []byte, result *api.Re
 	cmdEnv = append(cmdEnv, fmt.Sprintf("%s=%s", constant.TaskEnvKey, result.Id))
 	cmd.Env = append(os.Environ(), cmdEnv...)
 	log.Infof("id:%s  content :%s", result.Id, cmd.String())
-	runCmd(ch, p.Project.Name, cmd, result)
+	runCmd(ctx, ch, p.Project.Name, cmd, result)
+	log.Infof("result : %v", result)
 }
 
-func runCmd(ch chan []byte, projectName string, cmd *exec.Cmd, result *api.Result) {
+func runCmd(ctx context.Context, ch chan []byte, projectName string, cmd *exec.Cmd, result *api.Result) {
 	workPath, err := initWorkSpace(projectName)
 	if err != nil {
 		result.Message = err.Error()
@@ -118,6 +119,7 @@ func runCmd(ch chan []byte, projectName string, cmd *exec.Cmd, result *api.Resul
 		return
 	}
 	buf := make([]byte, 4096)
+	content := make([]byte, 0)
 	for {
 		nr, err := stdout.Read(buf)
 		if nr > 0 {
@@ -131,7 +133,22 @@ func runCmd(ch chan []byte, projectName string, cmd *exec.Cmd, result *api.Resul
 		}
 	}
 	close(ch)
-	if err = cmd.Wait(); err != nil {
+
+	done := make(chan error)
+	go func() {
+		done <- cmd.Wait()
+	}()
+
+	select {
+	case err = <-done:
+	case <-ctx.Done():
+		cmd.Process.Kill()
+		result.Message = ctx.Err().Error()
+		result.Success = false
+		log.Info("process killed")
+		return
+	}
+	if _, ok := err.(*exec.ExitError); ok {
 		result.Success = false
 		b, err := ioutil.ReadAll(stderr)
 		if err != nil {
@@ -141,7 +158,9 @@ func runCmd(ch chan []byte, projectName string, cmd *exec.Cmd, result *api.Resul
 		result.Message = string(b)
 		return
 	}
+	result.Message = string(content)
 	result.Success = true
+	return
 }
 
 func initWorkSpace(projectName string) (string, error) {

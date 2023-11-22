@@ -43,22 +43,27 @@ func TestKobeClient_RunAdhoc(t *testing.T) {
 
 func TestKobeClient_CancelTask(t *testing.T) {
 	client := NewKobeClient(host, port)
-	result, err := client.RunAdhoc("master", "setup", "", inventory)
+	result, err := client.RunAdhoc("master", "shell", "sleep 10", inventory)
 	if err != nil {
 		t.Error(err)
 	}
-	//go func() {
-	//	err = client.CancelTask(result.Id)
-	//	if err != nil {
-	//		t.Fatal(err)
-	//		return
-	//	}
-	//}()
-	//err = client.WatchRun(result.Id, os.Stdout)
-	//if err != nil {
-	//	t.Fatal(err)
-	//	return
-	//}
+	fmt.Println(result)
+	go func() {
+		err = client.CancelTask(result.Id)
+		if err != nil {
+			t.Fatal(err)
+			return
+		}
+	}()
+	err = client.WatchRun(result.Id, os.Stdout)
+	if err != nil {
+		t.Log(err)
+	}
+	result, err = client.GetResult(result.Id)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
 	fmt.Println(result)
 }
 
@@ -74,4 +79,13 @@ func TestKobeClient_RunPlaybook(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
+}
+func TestKobeClient_GetResult(t *testing.T) {
+	client := NewKobeClient(host, port)
+	result, err := client.GetResult("cc57c051-092c-4db5-bb38-afd189a319d6")
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	fmt.Println(result)
 }

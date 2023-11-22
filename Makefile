@@ -31,5 +31,13 @@ docker:
 	@echo "build docker images"
 	docker build -t trusfort/kobe:master --build-arg GOARCH=$(GOARCH) .
 
+docker-deploy:
+	@echo "deploy docker images"
+	docker run -it -d  --name kobe -p 8080:8080  trusfort/kobe:master
+
+docker-clean:
+	@echo "clean docker images"
+	docker ps -a | grep kobe | awk '{print $1}' | xargs docker rm -f
+
 generate_grpc:
 	protoc --go_out=plugins=grpc:./api ./api/kobe.proto

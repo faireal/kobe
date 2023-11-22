@@ -1,4 +1,4 @@
-FROM golang:1.14-alpine as stage-build
+FROM golang:1.21-alpine as stage-build
 LABEL stage=stage-build
 WORKDIR /build/kobe
 ARG GOARCH
