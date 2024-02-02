@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/KubeOperator/kobe/api"
+	"github.com/faireal/kobe/api"
 	"github.com/patrickmn/go-cache"
 	"github.com/prometheus/common/log"
 	uuid "github.com/satori/go.uuid"

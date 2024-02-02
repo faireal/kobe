@@ -1,10 +1,10 @@
 package root
 
 import (
-	"github.com/KubeOperator/kobe/cmd/client/adhoc"
-	"github.com/KubeOperator/kobe/cmd/client/playbook"
-	"github.com/KubeOperator/kobe/cmd/client/project"
-	"github.com/KubeOperator/kobe/cmd/client/task"
+	"github.com/faireal/kobe/cmd/client/adhoc"
+	"github.com/faireal/kobe/cmd/client/playbook"
+	"github.com/faireal/kobe/cmd/client/project"
+	"github.com/faireal/kobe/cmd/client/task"
 	"github.com/spf13/cobra"
 )
 

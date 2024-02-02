@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/KubeOperator/kobe/api"
-	"github.com/KubeOperator/kobe/pkg/server"
+	"github.com/faireal/kobe/api"
+	"github.com/faireal/kobe/pkg/server"
 	"google.golang.org/grpc"
 	"net"
 )

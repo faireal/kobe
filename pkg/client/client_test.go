@@ -2,7 +2,7 @@ package client
 
 import (
 	"fmt"
-	"github.com/KubeOperator/kobe/api"
+	"github.com/faireal/kobe/api"
 	"os"
 	"testing"
 )
@@ -18,18 +18,23 @@ var (
 				Port:     22,
 				User:     "root",
 				Password: "Trusfort@20151010",
-				Vars:     map[string]string{},
+				Vars: map[string]string{
+					"aaa": "3a",
+				},
 			},
 		},
 		Groups: []*api.Group{
 			{
 				Name:     "master",
 				Children: []string{},
-				Vars:     map[string]string{},
-				Hosts:    []string{"test"},
+				Vars: map[string]string{
+					"aaaa": "4a",
+				},
+				Hosts: []string{"test"},
 			},
 		},
 	}
+	projectName = "ko"
 )
 
 func TestKobeClient_RunAdhoc(t *testing.T) {
@@ -69,7 +74,7 @@ func TestKobeClient_CancelTask(t *testing.T) {
 
 func TestKobeClient_RunPlaybook(t *testing.T) {
 	client := NewKobeClient(host, port)
-	result, err := client.RunPlaybook("ko", "01-base.yaml", "", inventory)
+	result, err := client.RunPlaybook(projectName, "01-base.yaml", "", inventory)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -80,6 +85,7 @@ func TestKobeClient_RunPlaybook(t *testing.T) {
 		return
 	}
 }
+
 func TestKobeClient_GetResult(t *testing.T) {
 	client := NewKobeClient(host, port)
 	result, err := client.GetResult("cc57c051-092c-4db5-bb38-afd189a319d6")
@@ -92,7 +98,7 @@ func TestKobeClient_GetResult(t *testing.T) {
 
 func TestKobeClient_CreateProject(t *testing.T) {
 	client := NewKobeClient(host, port)
-	project, err := client.CreateProject("ko", "https://gitee.com/faireal/ansible.git")
+	project, err := client.CreateProject(projectName, "https://gitee.com/faireal/ansible.git")
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -108,4 +114,24 @@ func TestKobeClient_ListProject(t *testing.T) {
 		return
 	}
 	fmt.Println(project)
+}
+
+func TestKobeClient_DeleteProject(t *testing.T) {
+	client := NewKobeClient(host, port)
+	err := client.DeleteProject(projectName)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+}
+
+func TestKobeClient_GetInvertory(t *testing.T) {
+	client := NewKobeClient(host, port)
+	id := "fbdc4d3a-d37e-42ec-b1ac-236faab8a63c"
+	i, err := client.GetInvertory(id)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	fmt.Println(i)
 }

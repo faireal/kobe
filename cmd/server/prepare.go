@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/KubeOperator/kobe/pkg/constant"
+	"github.com/faireal/kobe/pkg/constant"
 	"github.com/spf13/viper"
 	"os"
 	"os/exec"

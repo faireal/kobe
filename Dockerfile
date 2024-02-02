@@ -9,6 +9,8 @@ ENV GOARCH=$GOARCH
 ENV CGO_ENABLED=0
 ENV GOPROXY=https://goproxy.cn
 
+RUN echo "https://mirrors.aliyun.com/alpine/latest-stable/main" > /etc/apk/repositories
+
 RUN  apk update \
   && apk add git \
   && apk add make

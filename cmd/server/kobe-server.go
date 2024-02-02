@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/KubeOperator/kobe/pkg/config"
-	"github.com/KubeOperator/kobe/pkg/constant"
+	"github.com/faireal/kobe/pkg/config"
+	"github.com/faireal/kobe/pkg/constant"
 	"github.com/spf13/viper"
 	"log"
 )

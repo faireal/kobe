@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/KubeOperator/kobe/pkg/config"
-	"github.com/KubeOperator/kobe/pkg/inventory"
+	"github.com/faireal/kobe/pkg/config"
+	"github.com/faireal/kobe/pkg/inventory"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -30,8 +30,8 @@ var rootCmd = &cobra.Command{
 			fmt.Println(result)
 			os.Exit(0)
 		}
-		fmt.Println(host)
-		fmt.Println(port)
+		//fmt.Println(host)
+		//fmt.Println(port)
 	},
 }
 

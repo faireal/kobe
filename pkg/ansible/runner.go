@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/KubeOperator/kobe/api"
-	"github.com/KubeOperator/kobe/pkg/constant"
-	"github.com/KubeOperator/kobe/pkg/util"
+	"github.com/faireal/kobe/api"
+	"github.com/faireal/kobe/pkg/constant"
+	"github.com/faireal/kobe/pkg/util"
 	"github.com/prometheus/common/log"
 	"io"
 	"io/ioutil"
@@ -125,6 +125,7 @@ func runCmd(ctx context.Context, ch chan []byte, projectName string, cmd *exec.C
 		if nr > 0 {
 			select {
 			case ch <- buf[:nr]:
+				content = append(content, buf[:nr]...)
 			default:
 			}
 		}
@@ -143,7 +144,7 @@ func runCmd(ctx context.Context, ch chan []byte, projectName string, cmd *exec.C
 	case err = <-done:
 	case <-ctx.Done():
 		cmd.Process.Kill()
-		result.Message = ctx.Err().Error()
+		result.Message = string(content) + " " + ctx.Err().Error()
 		result.Success = false
 		log.Info("process killed")
 		return

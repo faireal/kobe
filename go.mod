@@ -1,4 +1,4 @@
-module github.com/KubeOperator/kobe
+module github.com/faireal/kobe
 
 go 1.21
 

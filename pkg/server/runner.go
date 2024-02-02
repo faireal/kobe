@@ -3,7 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
-	"github.com/KubeOperator/kobe/pkg/ansible"
+	"github.com/faireal/kobe/pkg/ansible"
 	"github.com/patrickmn/go-cache"
 )
 

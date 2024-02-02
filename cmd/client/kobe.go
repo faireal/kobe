@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/KubeOperator/kobe/cmd/client/root"
-	"github.com/KubeOperator/kobe/pkg/config"
+	"github.com/faireal/kobe/cmd/client/root"
+	"github.com/faireal/kobe/pkg/config"
 	"os"
 )
 

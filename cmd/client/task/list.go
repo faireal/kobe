@@ -2,7 +2,7 @@ package task
 
 import (
 	"fmt"
-	"github.com/KubeOperator/kobe/pkg/client"
+	"github.com/faireal/kobe/pkg/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"

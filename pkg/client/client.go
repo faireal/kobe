@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/KubeOperator/kobe/api"
+	"github.com/faireal/kobe/api"
 	"google.golang.org/grpc"
 	"io"
 )
@@ -198,4 +198,21 @@ func (c *KobeClient) CancelTask(taskId string) error {
 	}
 	return nil
 
+}
+
+func (c *KobeClient) GetInvertory(id string) (*api.Inventory, error) {
+	conn, err := c.createConnection()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	client := api.NewKobeApiClient(conn)
+	request := api.GetInventoryRequest{
+		Id: id,
+	}
+	resp, err := client.GetInventory(context.Background(), &request)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Item, nil
 }

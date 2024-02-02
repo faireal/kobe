@@ -3,9 +3,9 @@ package server
 import (
 	"errors"
 	"fmt"
-	"github.com/KubeOperator/kobe/api"
-	"github.com/KubeOperator/kobe/pkg/constant"
-	"github.com/KubeOperator/kobe/pkg/util"
+	"github.com/faireal/kobe/api"
+	"github.com/faireal/kobe/pkg/constant"
+	"github.com/faireal/kobe/pkg/util"
 	"io/ioutil"
 	"os"
 	"path"
