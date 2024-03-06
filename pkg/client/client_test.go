@@ -35,6 +35,7 @@ var (
 		},
 	}
 	projectName = "ko"
+	url         = "https://gitee.com/faireal/ansible.git"
 )
 
 func TestKobeClient_RunAdhoc(t *testing.T) {
@@ -98,7 +99,17 @@ func TestKobeClient_GetResult(t *testing.T) {
 
 func TestKobeClient_CreateProject(t *testing.T) {
 	client := NewKobeClient(host, port)
-	project, err := client.CreateProject(projectName, "https://gitee.com/faireal/ansible.git")
+	project, err := client.CreateProject(projectName, url)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	fmt.Println(project)
+}
+
+func TestKobeClient_CreateProjectWithAuth(t *testing.T) {
+	client := NewKobeClient(host, port)
+	project, err := client.CreateProjectWithAuth(projectName, url, "faireal", "faireal032.")
 	if err != nil {
 		t.Fatal(err)
 		return

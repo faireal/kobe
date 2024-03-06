@@ -58,6 +58,8 @@ message Inventory{
 message CreateProjectRequest {
   string name = 1;
   string source = 2;
+  string username = 3;
+  string password = 4;
 }
 
 message CreateProjectResponse {

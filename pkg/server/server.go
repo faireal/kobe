@@ -31,7 +31,7 @@ func NewKobe() *Kobe {
 
 func (k *Kobe) CreateProject(ctx context.Context, req *api.CreateProjectRequest) (*api.CreateProjectResponse, error) {
 	pm := ProjectManager{}
-	p, err := pm.CreateProject(req.Name, req.Source)
+	p, err := pm.CreateProject(req.Name, req.Source,req.Username,req.Password)
 	if err != nil {
 		return nil, err
 	}

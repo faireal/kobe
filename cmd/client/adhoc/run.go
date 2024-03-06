@@ -38,7 +38,7 @@ var adhocRunCmd = &cobra.Command{
 		if len(args) > 0 {
 			param = args[0]
 		}
-		result, err := c.RunAdhoc(pattern, module, param, inventory)
+		result, err := c.RunAdhoc(pattern, module, param, &inventory)
 		if err != nil {
 			log.Fatal(err)
 		}

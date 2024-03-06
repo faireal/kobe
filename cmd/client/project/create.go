@@ -26,7 +26,7 @@ var projectCreateCmd = &cobra.Command{
 			log.Fatal(errors.New("you must provide a valid project name"))
 		}
 		source := args[0]
-		p, err := c.CreateProject(name, source)
+		p, err := c.CreateProject(name, source, "", "")
 		if err != nil {
 			log.Fatal(err)
 		}

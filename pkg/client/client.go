@@ -38,6 +38,26 @@ func (c *KobeClient) CreateProject(name string, source string) (*api.Project, er
 	return resp.Item, nil
 
 }
+func (c *KobeClient) CreateProjectWithAuth(name string, source string, username string, password string) (*api.Project, error) {
+	conn, err := c.createConnection()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	client := api.NewKobeApiClient(conn)
+	request := api.CreateProjectRequest{
+		Name:   name,
+		Source: source,
+		Username: username,
+		Password: password,
+	}
+	resp, err := client.CreateProject(context.Background(), &request)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Item, nil
+
+}
 
 func (c KobeClient) ListProject() ([]*api.Project, error) {
 	conn, err := c.createConnection()

@@ -64,12 +64,12 @@ func (pm ProjectManager) IsProjectExists(name string) (bool, error) {
 	return exists, nil
 }
 
-func (pm ProjectManager) CreateProject(name, source string) (*api.Project, error) {
+func (pm ProjectManager) CreateProject(name, source string, username string, password string) (*api.Project, error) {
 	projectPath := path.Join(constant.ProjectDir, name)
 	if err := os.MkdirAll(projectPath, 0755); err != nil {
 		return nil, err
 	}
-	if err := util.CloneRepository(source, projectPath); err != nil {
+	if err := util.CloneRepositoryWithAuth(source, projectPath, username, password); err != nil {
 		_ = os.Remove(projectPath)
 		return nil, err
 	}
