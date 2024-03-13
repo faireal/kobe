@@ -264,7 +264,7 @@ func (c *KobeClient) WatchRunWithFlush(taskId string, writer io.Writer) error {
 		if err != nil {
 			return err
 		}
-		_, err = writer.Write(msg.Stream)
+		_, err = writer.Write([]byte("data: " + string(msg.Stream) + "\n\n"))
 		if err != nil {
 			break
 		}
