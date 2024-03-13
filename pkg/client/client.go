@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/faireal/kobe/api"
 	"google.golang.org/grpc"
@@ -256,6 +257,7 @@ func (c *KobeClient) WatchRunWithFlush(taskId string, writer io.Writer) error {
 	if !ok {
 		return fmt.Errorf("writer does not support flushing")
 	}
+	enc := json.NewEncoder(writer)
 	for {
 		msg, err := server.Recv()
 		if err == io.EOF {
@@ -264,11 +266,33 @@ func (c *KobeClient) WatchRunWithFlush(taskId string, writer io.Writer) error {
 		if err != nil {
 			return err
 		}
-		_, err = writer.Write([]byte("data: " + string(msg.Stream) + "\n\n"))
-		if err != nil {
-			break
-		}
+		io.WriteString(writer, "data: ")
+		enc.Encode(NewTextMsg(msg.Stream))
+		io.WriteString(writer, "\n\n")
 		f.Flush()
 	}
 	return nil
+}
+
+const (
+	MSG_TYPE_TEXT = 1
+	MSG_TYPE_JSON = 2
+)
+
+type Msg struct {
+	Type int
+	Data []byte
+}
+
+func NewTextMsg(data []byte) *Msg {
+	return &Msg{
+		Type: MSG_TYPE_TEXT,
+		Data: data,
+	}
+}
+func NewJsonMsg(data []byte) *Msg {
+	return &Msg{
+		Type: MSG_TYPE_JSON,
+		Data: data,
+	}
 }
