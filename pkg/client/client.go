@@ -6,6 +6,7 @@ import (
 	"github.com/faireal/kobe/api"
 	"google.golang.org/grpc"
 	"io"
+	"net/http"
 )
 
 func NewKobeClient(host string, port int) *KobeClient {
@@ -46,8 +47,8 @@ func (c *KobeClient) CreateProjectWithAuth(name string, source string, username 
 	defer conn.Close()
 	client := api.NewKobeApiClient(conn)
 	request := api.CreateProjectRequest{
-		Name:   name,
-		Source: source,
+		Name:     name,
+		Source:   source,
 		Username: username,
 		Password: password,
 	}
@@ -235,4 +236,39 @@ func (c *KobeClient) GetInvertory(id string) (*api.Inventory, error) {
 		return nil, err
 	}
 	return resp.Item, nil
+}
+
+func (c *KobeClient) WatchRunWithFlush(taskId string, writer io.Writer) error {
+	conn, err := c.createConnection()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	client := api.NewKobeApiClient(conn)
+	req := &api.WatchRequest{
+		TaskId: taskId,
+	}
+	server, err := client.WatchResult(context.Background(), req)
+	if err != nil {
+		return err
+	}
+	f, ok := writer.(http.Flusher)
+	if !ok {
+		return fmt.Errorf("writer does not support flushing")
+	}
+	for {
+		msg, err := server.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		_, err = writer.Write(msg.Stream)
+		if err != nil {
+			break
+		}
+		f.Flush()
+	}
+	return nil
 }
