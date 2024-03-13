@@ -267,7 +267,7 @@ func (c *KobeClient) WatchRunWithFlush(taskId string, writer io.Writer) error {
 			return err
 		}
 		io.WriteString(writer, "data: ")
-		enc.Encode(NewTextMsg(msg.Stream))
+		enc.Encode(NewTextMsg(string(msg.Stream)))
 		io.WriteString(writer, "\n\n")
 		f.Flush()
 	}
@@ -281,16 +281,16 @@ const (
 
 type Msg struct {
 	Type int
-	Data []byte
+	Data string
 }
 
-func NewTextMsg(data []byte) *Msg {
+func NewTextMsg(data string) *Msg {
 	return &Msg{
 		Type: MSG_TYPE_TEXT,
 		Data: data,
 	}
 }
-func NewJsonMsg(data []byte) *Msg {
+func NewJsonMsg(data string) *Msg {
 	return &Msg{
 		Type: MSG_TYPE_JSON,
 		Data: data,
